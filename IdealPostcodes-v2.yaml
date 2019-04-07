@@ -1,0 +1,1089 @@
+swagger: '2.0'
+info:
+  description: IdealPostcodes API (v2)
+  version: 2.0.0
+  title: IdealPostcodes API (v2)
+  contact:
+    email: overflow2341313@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: api.ideal-postcodes.co.uk
+basePath: /v1/
+tags:
+  - name: 'Postcodes'
+  - name: 'Addresses'
+  - name: 'Autocomplete'
+  - name: 'UDPRN'
+  - name: 'UMPRN'
+  - name: 'Keys'
+  - name: 'Licensees'
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /postcodes/{postcode}:
+    get:
+      operationId: postcodeToAddresses
+      tags:
+        - Postcodes
+      description: "Returns the complete list of addresses for a postcode. Postcode searches are space and case insensitive."
+      summary: "Returns the complete list of addresses for a postcode. Postcode searches are space and case insensitive."
+      parameters:
+        - name: postcode
+          in: path
+          required: true
+          type: string
+        - name: filter
+          description: "Comma separated whitelist of address elements to return. E.g. filter=line_1,line_2,line_3 returns only line_1, line_2 and line_3 address elements in your response"
+          type: string
+          required: false
+          in: query
+        - name: licensee
+          in: query
+          required: false
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+          type: string
+        - name: page
+          in: query
+          required: false
+          type: number
+          description: "(Optional) 0 indexed indicator of the page of results to receive for multiple residence datasets."
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/PostcodeToAddressResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /postcodes:
+    get:
+      operationId: geolocationToPostcode
+      tags:
+        - Postcodes
+      description: "Returns the complete list of addresses for a postcode. Postcode searches are space and case insensitive."
+      summary: "Returns the complete list of addresses for a postcode. Postcode searches are space and case insensitive."
+      parameters:
+        - name: lonlat
+          in: query
+          required: true
+          type: string
+          description: "Specifies the longitude and latitude of the location you wish to query. Longitude and latitude are decimal and seperated by a single comma with no spaces. E.g. lonlat=-0.2532632,57.62363744"
+        - name: radius
+          in: query
+          description: "Determines how close the postcode must be to the location to be returned as a result. Default is 100m. Max is 1000m"
+          type: string
+        - name: limit
+          type: integer
+          maximum: 150
+          default: 100
+          description: "Specifies the upper limit on the number of postcodes to be returned. Default is 100 postcodes. Max is 150"
+          in: query
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/GeolocationToPostcodesResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /addresses:
+    get:
+      operationId: addressSearch
+      tags:
+        - Addresses
+      description: "If a valid postcode is passed as the query string, the entire address list for that postcode is returned as the result. Note, in these cases, limit parameter is ignored and fixed at 100. If your key is configured to return Multiple Residence data, you may need to query more pages to return the entire list as more than 100 delivery points or residences may be returned."
+      summary: "Returns the complete list of addresses for a postcode. Postcode searches are space and case insensitive."
+      parameters:
+        - name: query
+          type: string
+          in: query
+          required: true
+          description: "Specifies the address you wish to query. Query can be shortened to q="
+        - name: page
+          type: integer
+          description: "Specifies the upper limit on the number of address results to be returned. Max is 100 addresses. Query can be shortened to l="
+          in: query
+        - name: filter
+          in: query
+          description: "Comma separated whitelist of address elements to return. E.g. filter=line_1,line_2,line_3 returns only line_1, line_2 and line_3 address elements in your response"
+          type: string
+        - name: postcode_outward
+          description: "Comma separated list of outward codes with which to restrict result set. E.g. postcode_outward=sw1a, postcode_outward=tr8,le18"
+          type: string
+          in: query
+        - name: licensee
+          in: query
+          type: string
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AddressSearchResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /addresses/{udprn}:
+    get:
+      operationId: updrnToAddress
+      tags:
+        - Addresses
+      description: "Returns an address identified via its Unique Delivery Point Reference Number (UDPRN)."
+      summary: "Returns an address identified via its Unique Delivery Point Reference Number (UDPRN)."
+      parameters:
+        - name: udprn
+          in: path
+          required: true
+          type: string
+          description: "UDPRNs are an eight digit unique numeric code (e.g. 25962203) for any premise on the Postcode Address File. It's essentially a unique identifier for every address in the UK that Royal Mail has in its database."
+        - name: filter
+          in: query
+          description: "Comma separated whitelist of address elements to return. E.g. filter=line_1,line_2,line_3 returns only line_1, line_2 and line_3 address elements in your response"
+          type: string
+        - name: licensee
+          in: query
+          type: string
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UDPRNToAddressResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /autocomplete/addresses:
+    get:
+      operationId: addressAutocomplete
+      tags:
+        - Autocomplete
+      parameters:
+        - name: query
+          required: true
+          type: string
+          in: query
+          description: "Specifies the address you wish to query. Query can be shortened to q="
+        - name: licensee
+          type: string
+          in: query
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+        - name: limit
+          in: query
+          type: integer
+          description: "Specifies the maximum number of suggestions to retrieve. Range must be 1-100. By default the limit is 10, unless a postcode is queried (then all addresses at that postcode will be returned). Limit can be shortened to l="
+        - name: postcode_outward
+          type: string
+          description: "Comma separated list of outward codes with which to restrict result set. E.g. postcode_outward=sw1a, postcode_outward=tr8,le18"
+          in: query
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AddressAutocompleteResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /udprn/{udprn}:
+    get:
+      operationId: lookupUDPRN
+      tags:
+        - UDPRN
+      parameters:
+        - name: udprn
+          in: path
+          required: true
+          type: string
+        - name: licensee
+          type: string
+          in: query
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+        - name: filter
+          description: "Comma separated whitelist of address elements to return. E.g. filter=line_1,line_2,line_3 returns only line_1, line_2 and line_3 address elements in your response"
+          type: string
+          in: query
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AddressLookupResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /umprn/{umprn}:
+    get:
+      operationId: lookupUMPRN
+      tags:
+        - UMPRN
+      parameters:
+        - name: umprn
+          in: path
+          required: true
+          type: string
+        - name: licensee
+          type: string
+          in: query
+          description: "Only required if you are using a sublicensed key. This parameter will associate the request with your licensee"
+        - name: filter
+          description: "Comma separated whitelist of address elements to return. E.g. filter=line_1,line_2,line_3 returns only line_1, line_2 and line_3 address elements in your response"
+          type: string
+          in: query
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AddressLookupResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+      security:
+        - apiKey: []
+  /keys/{key}:
+    get:
+      operationId: checkKeyUsability
+      tags:
+        - Keys
+      summary: "Currently only returns whether the key is currently useable via the available property."
+      description: "Returns public information on key. Currently only returns whether the key is currently useable via the available property. Use this to discover if the key is useable before making further requests."
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/KeyUsabilityResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+  /keys/{key}/usage:
+    get:
+      operationId: monitorKeyUsage
+      tags:
+        - Keys
+      summary: "Reports usage information on a key for paid lookups."
+      description: "This method requires a user_token, which can be found on your accounts page. A maximum interval of 90 days can be provided for analysis. If no start or end date is provided, the last 21 days will be used as the default interval."
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+        - name: start
+          description: "An start date/time in the form of a UNIX Timestamp in milliseconds, e.g. 1418556452651. If no start time is provided, the start time will be assigned to a time 21 days prior to the end time."
+          type: integer
+          in: query
+        - name: end
+          type: integer
+          in: query
+          description: "An end date/time in the form of a UNIX Timestamp in milliseconds, e.g. 1418556452651. If no end time is provided, the current time will be used."
+        - name: tags
+          type: string
+          in: query
+          description: "An comma separated list of tags you wish to query for. This is useful if you want to specify the circumstances in which the request was made. If multiple tags are specified, the analysed dataset will only comprise of requests for which all the tags are satisfied - i.e. searching foo,bar will only query requests which tagged both 'foo' and 'bar'."
+        - name: licensee
+          type: string
+          in: query
+          description: "Sublicensed keys only. This will restrict the analysed dataset to a specific licensee."
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/KeyUsageResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+  /keys/{key}/lookups:
+    get:
+      operationId: downloadUsageHistory
+      tags:
+        - Keys
+      summary: "Returns a CSV download of lookups performed and associated information."
+      description: "Note that the Content-Type returned will be CSV (text/csv). For a non 200 response, the Content-Type will revert to JSON with the error code and message embedded."
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+        - name: start
+          description: "An start date/time in the form of a UNIX Timestamp in milliseconds, e.g. 1418556452651. If no start time is provided, the start time will be assigned to a time 21 days prior to the end time."
+          type: integer
+          in: query
+        - name: end
+          type: integer
+          in: query
+          description: "An end date/time in the form of a UNIX Timestamp in milliseconds, e.g. 1418556452651. If no end time is provided, the current time will be used."
+        - name: licensee
+          type: string
+          in: query
+          description: "Sublicensed keys only. This will restrict the analysed dataset to a specific licensee."
+      produces:
+        - text/csv
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: string
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+  /keys/{key}/licensees:
+    get:
+      operationId: listLicensees
+      tags:
+        - Licensees
+      summary: "Returns a list of licensees for a key."
+      description: "Returns a list of licensees for a key."
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+        - name: starting_after
+          description: "Specify ID of the licensee after which you would like to list results"
+          type: integer
+          in: query
+        - name: limit
+          description: "Specify the maximum number of results to return per page. Default and maximum is 100."
+          maximum: 100
+          in: query
+          type: integer
+        - name: query
+          type: string
+          in: query
+          description: "Filter result by licensee name. Query can be shortened to q="
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/LicenseeListResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+    post:
+      operationId: createLicensee
+      tags:
+        - Licensees
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: licensee
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateLicenseeSchema"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/LicenseeResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+    put:
+      operationId: updateLicensee
+      tags:
+        - Licensees
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: licensee
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateLicenseeSchema"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/LicenseeResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+  /keys/{key}/licensees/{licensee_key}:
+    get:
+      operationId: retrieveLicensee
+      tags:
+        - Licensees
+      summary: "Returns a licensees for a key."
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: licensee_key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/LicenseeResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+    delete:
+      operationId: deleteLicensee
+      tags:
+        - Licensees
+      parameters:
+        - name: key
+          in: path
+          required: true
+          type: string
+        - name: licensee_key
+          in: path
+          required: true
+          type: string
+        - name: user_token
+          in: query
+          type: string
+          required: false
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DeleteLicenseeResponseSchema"
+        400:
+          description: "Bad request"
+        402:
+          description: "Request failed"
+        404:
+          description: "Resource not found"
+        500:
+          description: "Server error"
+        503:
+          description: "Rate limit exceeded"
+securityDefinitions:
+  apiKey:
+    type: apiKey
+    in: query
+    name: api_key
+definitions:
+  PostcodeToAddressResponseSchema:
+    properties:
+      result:
+        $ref: "#/definitions/PostcodeToAddressList"
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  PostcodeToAddressList:
+    type: array
+    items:
+      $ref: "#/definitions/Address"
+  GeolocationToPostcodesResponseSchema:
+    properties:
+      result:
+        $ref: "#/definitions/GeolocationToPostcodesList"
+      code:
+        type: integer
+      page:
+        type: number
+        description: "Indicates current page number."
+      total:
+        type: number
+        description: "Indicates the maximum number of delivery points plus residences at this postcode."
+      limit:
+        type: number
+        description: "Maximum number of results per request. Fixed at 100 for this method"
+      message:
+        type: string
+    type: object
+  GeolocationToPostcodesList:
+    type: array
+    items:
+      $ref: "#/definitions/GeolocationToPostcode"
+  GeolocationToPostcode:
+    properties:
+      eastings:
+        type: integer
+        description: "Eastings reference using the Ordnance Survey National Grid reference system. Northern Ireland Eastings uses the Irish Grid Reference System. Metres from origin. E.g. 550458. Returns an empty string if no location data is available. Otherwise a number is returned"
+      northings:
+        type: integer
+        description: "Northings reference using the Ordnance Survey National Grid reference system. Northern Ireland Northings uses the Irish Grid Reference System. Metres from origin. E.g. 180458. Returns an empty string if no location data is available. Otherwise a number is returned"
+      longitude:
+        type: number
+        description: "The longitude of the postcode (WGS84/ETRS89). Accurate at the postcode level. Can be a positive or negative decimal. E.g. -0.1283983. Returns an empty string if no location data is available. Otherwise, a number is returned"
+      latitude:
+        type: number
+        description: "The latitude of the postcode (WGS84/ETRS89). Accurate at the postcode level Can be a positive or negative decimal. E.g. 51.5083983. Returns an empty string if no location data is available. Otherwise a number is returned"
+      distance:
+        type: number
+      postcode:
+        type: string
+        description: "Correctly formatted postcode. Capitalised and spaced."
+    type: object
+  AddressSearchResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/AddressSearchResult"
+  AddressSearchResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      limit:
+        type: integer
+      page:
+        type: integer
+      hits:
+        $ref: "#/definitions/AddressSearchHits"
+  AddressSearchHits:
+    type: array
+    items:
+      $ref: "#/definitions/Address"
+  UDPRNToAddressResponseSchema:
+    type: object
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      result:
+        $ref: "#/definitions/Address"
+  AddressAutocompleteResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/AddressAutocompleteResult"
+      code:
+        type: integer
+      message:
+        type: string
+  AddressAutocompleteResult:
+    type: object
+    properties:
+      hits:
+        $ref: "#/definitions/AddressAutocompleteHits"
+  AddressAutocompleteHits:
+    type: array
+    items:
+      $ref: "#/definitions/AddressAutocompleteHit"
+  AddressAutocompleteHit:
+    type: object
+    properties:
+      suggestion:
+        type: string
+        description: "Suggestion for your given query, represented as a partial address."
+      urls:
+        $ref: "#/definitions/AddressAutocompleteHitUrls"
+      udprn:
+        type: string
+        description: "Represents the UDPRN of a premise"
+      umprn:
+        type: string
+        description: "Optionally returned field, representing the UMPRN of a Multiple Residence household"
+  AddressAutocompleteHitUrls:
+    type: object
+    properties:
+      udprn:
+        type: string
+        description: "URL to retrieve the entire details for a given address suggestion"
+      umprn:
+        type: string
+        description: "Optionally returned field, to retrieve the entire details for a suggested Multiple Residence household"
+  AddressLookupResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/Address"
+      code:
+        type: integer
+      message:
+        type: string
+  Address:
+    type: object
+    properties:
+      postcode:
+        type: string
+        description: "Correctly formatted postcode. Capitalised and spaced."
+      postcode_inward:
+        type: string
+        description: "The second part of a postcode is known as the inward Code. e.g. The inward code of ID1 1QD is 1QD. This part is one number followed by two letters. The number identifies the sector in the postal district. The letters then define one or more properties in that sector."
+      postcode_outward:
+        type: string
+        description: "The first part of a postcode is known as the outward code. e.g. The outward code of ID1 1QD is ID1. Enables mail to be sorted to the correct local area for delivery. This part of the code contains the area and the district to which the mail is to be delivered, e.g. ‘PO1’, ‘SW1A’ or ‘B23’."
+      post_town:
+        type: string
+        maxLength: 30
+        description: "A Post Town is mandatory for delivery of mail to a Delivery Point. This is not necessarily the nearest town geographically, but a routing instruction to the Royal Mail delivery office sorting mail for that Delivery Point. A Post Town will always be present in every address, and for some Localities the Post Town will be the only locality element present."
+      dependent_locality:
+        type: string
+        maxLength: 35
+        description: "When the same thoroughfare name reoccurs in a Post town, it may not be possible to make it dependant on a dependant thoroughfare. In this case the thoroughfare is dependant on a locality. For example if we want to find 1 Back Lane in Huddersfield we see that there are three."
+      double_dependent_locality:
+        type: string
+        maxLength: 35
+        description: "Used to supplement Dependant Locality. A Double Dependant Locality supplied along with a Dependant Locality if the Dependant Locality exists twice in the same locality."
+      thoroughfare:
+        type: string
+        maxLength: 80
+        description: "Also known as the street or road name. In general each Thoroughfare Name will have a separate Postcode. Longer Thoroughfares with high number ranges often have multiple Postcodes covering the entire length of the road, with breaks at suitable points e.g. junctions or natural breaks in the road."
+      dependent_thoroughfare:
+        type: string
+        maxLength: 80
+        description: "Used to supplement thoroughfare. When a thoroughfare name is used twice in the same Post Town, the dependant thoroughfare is added to uniquely indentify a delivery point."
+      building_number:
+        type: string
+        maxLength: 4
+        description: "Number to identify premise on a thoroughfare or dependant thoroughfare."
+      building_name:
+        type: string
+        maxLength: 50
+        description: "Name of residential or commercial premise. E.g. The Manor, 1-2, A, 12A, K, Victoria House"
+      sub_building_name:
+        type: string
+        maxLength: 30
+        description: "When a premise is split into individual units such as flats, apartments or business units. Cannot be present without either building_name or building_number. E.g. Flat 1, A, 10B"
+      po_box:
+        type: string
+        description: "When the PO Box Number field is populated it will contain PO BOX nnnnnn where n represents the PO Box number. Note that the PO Box details can occasionally consist of a combination of numbers and letters e.g. HK860. PO Box Numbers are only allocated to Large Users."
+      department_name:
+        type: string
+        maxLength: 60
+        description: "Used to supplment Organisation Name to identify a deparment within the organisation."
+      organisation_name:
+        type: string
+        maxLength: 60
+        description: "Name of the organisation registered at this address."
+      udprn:
+        type: integer
+        description: "UDPRN stands for ‘Unique Delivery Point Reference Number’. Royal Mail assigns a unique UDPRN code for each premise on PAF. Simple, unique reference number for each Delivery Point. Unlikely to be reused when an address expires. Up to 8-digit numeric code. A new UDPRN is automatically assigned to each new Delivery Point added to PAF."
+      umprn:
+        # Or string
+        type: string
+        description: "A small minority of individual premises (as identified by a UDPRN) may have multiple occupants behind the same letterbox. These are known as Multiple Residence occupants and can be queried via the Multiple Residence dataset. Simple, unique reference number for each Multiple Residence occupant. 8-character numeric code. Note: this will be an empty string when not used for legacy reasons"
+      postcode_type:
+        type: string
+        description: "This indicates the type of user. It can only take the values 'S' or 'L' indicating small or large respectively. Large User Postcodes. These are assigned to one single address either due to the large volume of mail received at that address, or because a PO Box or Selectapost service has been set up. Small User Postcodes. These identify a group of Delivery Points. On average there are 15 Delivery Points per Postcode. However this can vary between 1 and, in some cases, 100. There will never be more than 100 Delivery Points on a Postcode."
+        enum:
+          - 'S'
+          - 'L'
+      su_organisation_indicator:
+        type: string
+        description: "Small User Organisation Indicator can have the values 'Y' or space. A value of 'Y' indicates that a Small User Organisation is present at this address."
+      delivery_point_suffix:
+        type: string
+        description: "A unique Royal Mail 2-character code (the first numeric & the second alphabetical), which, when added to the Postcode, enables each live Delivery Point to be uniquely identified. Once the Delivery Point is deleted from PAF the DPS may be reused (although they aren’t reused until all remaining Delivery Points in the range have been allocated). The DPS for a Large User is always '1A' as each Large User has its own Postcode. E.g. 2B"
+      line_1:
+        type: string
+        description: "First Address Line. Often contains premise and thoroughfare information. In the case of a commercial premise, the first line is always the full name of the registered organisation. Never empty."
+      line_2:
+        type: string
+        description: "Second Address Line. Often contains thoroughfare and locality information. May be empty."
+      line_3:
+        type: string
+        description: "Third address line. May be empty."
+      premise:
+        type: string
+        # Premise can potentially include sub building name, building name, building number plus comma dividers ", ". The maximum length of this field is therefore 84 characters (30 + 50 + 4 + 2 + 2)
+        maxLength: 84
+        description: "A pre-computed string which sensibly combines building_number, building_name and sub_building_name. building_number, building_name and sub_building_name represent raw data from Royal Mail's and can be difficult to parse if you are unaware of how the Postcode Address File premise fields work together. For this reason, we also provide a pre-computed premise field which intelligently gathers these points into a single, simple premise string. This field is ideal if you want to pull premise information and thoroughfare information separately instead of using our address lines data."
+      country:
+        type: string
+        description: "The country for which the postcode belongs to. May be empty for a small number of addresses. Data source: ONS"
+      county:
+        type: string
+        description: "Since postal, administrative or traditional counties may not apply to some addresses, the county field is designed to return whatever county data is available. Normally, the postal county is returned. If this is not present, the county field will fall back to the administrative county. If the administrative county is also not present, the county field will fall back to the traditional county. May be empty in cases where no administrative, postal or traditional county present."
+      administrative_county:
+        type: string
+        description: "The current administrative county to which the postcode has been assigned. A Unitary Authority name, where one is present. If there is no Unitary Authority, the County name is used. This information is not static, because County boundaries may change due to administrative changes. Data source: ONS. May be empty."
+      postal_county:
+        type: string
+        description: "Postal counties were used for the distribution of mail before the Postcode system was introduced in the 1970s. The Former Postal County was the Administrative County at the time. This data rarely changes. Data source: Royal Mail. May be empty."
+      traditional_county:
+        type: string
+        description: "Traditional counties are provided by the Association of British Counties. It’s historical data, and can date from the 1800s. Data source: Royal Mail. May be empty."
+      district:
+        type: string
+        description: "The current district/unitary authority to which the postcode has been assigned. Data source: ONS"
+      ward:
+        type: string
+        description: "The current administrative/electoral area to which the postcode has been assigned. May be empty for a small number of addresses. Data source: ONS"
+      longitude:
+        type: number
+        description: "The longitude of the postcode (WGS84/ETRS89). Accurate at the postcode level. Can be a positive or negative decimal. E.g. -0.1283983. Returns an empty string if no location data is available. Otherwise, a number is returned"
+      latitude:
+        type: number
+        description: "The latitude of the postcode (WGS84/ETRS89). Accurate at the postcode level Can be a positive or negative decimal. E.g. 51.5083983. Returns an empty string if no location data is available. Otherwise a number is returned"
+      eastings:
+        type: integer
+        description: "Eastings reference using the Ordnance Survey National Grid reference system. Northern Ireland Eastings uses the Irish Grid Reference System. Metres from origin. E.g. 550458. Returns an empty string if no location data is available. Otherwise a number is returned"
+      northings:
+        type: integer
+        description: "Northings reference using the Ordnance Survey National Grid reference system. Northern Ireland Northings uses the Irish Grid Reference System. Metres from origin. E.g. 180458. Returns an empty string if no location data is available. Otherwise a number is returned"
+  KeyUsabilityResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: '#/definitions/KeyUsabilityResult'
+      message:
+        type: string
+      code:
+        type: integer
+  KeyUsabilityResult:
+    type: object
+    properties:
+      available:
+        type: boolean
+  KeyDetailsResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/KeyDetailsResult"
+      code:
+        type: integer
+      message:
+        type: string
+  KeyDetailsResult:
+    type: object
+    properties:
+      lookups_remaining:
+        type: integer
+      daily_limit:
+        $ref: '#/definitions/KeyDailyLimit'
+      individual_limit:
+        $ref: '#/definitions/KeyIndividualLimit'
+      allowed_urls:
+        $ref: '#/definitions/StringList'
+      notifications:
+        $ref: '#/definitions/Notifications'
+      automated_topups:
+        $ref: '#/definitions/AutomatedTopup'
+      current_purchases:
+        $ref: '#/definitions/CurrentPurchases'
+  CurrentPurchases:
+    type: array
+    items:
+      $ref: '#/definitions/CurrentPurchase'
+  CurrentPurchase:
+    type: object
+    properties:
+      expires:
+        type: string
+        format: datetime
+      purchased:
+        type: integer
+      consumed:
+        type: integer
+  AutomatedTopup:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+  Notifications:
+    type: object
+    properties:
+      emails:
+        $ref: '#/definitions/StringList'
+      enabled:
+        type: boolean
+  KeyIndividualLimit:
+    type: object
+    properties:
+      limit:
+        type: integer
+  KeyDailyLimit:
+    type: object
+    properties:
+      limit:
+        type: integer
+      consumed:
+        type: integer
+  KeyUsageResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/KeyUsageResult"
+      code:
+        type: integer
+      message:
+        type: string
+  KeyUsageResult:
+    properties:
+      start:
+        type: string
+        format: datetime
+        description: "Start date in ISO 8601 format."
+      end:
+        type: string
+        format: datetime
+        description: "End date in ISO 8601 format."
+      total:
+        type: integer
+        description: "Total of paid lookups performed in specified period."
+      dailyCount:
+        $ref: "#/definitions/KeyUsageDailyCount"
+  KeyUsageDailyCount:
+    type: array
+    items:
+      $ref: "#/definitions/KeyUsageDailyCountEpoch"
+  KeyUsageDailyCountEpoch:
+    type: object
+    properties:
+      date:
+        type: string
+        format: datetime
+      count:
+        type: integer
+  LicenseeListResponseSchema:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: integer
+      result:
+        $ref: "#/definitions/LicenseeListResult"
+  LicenseeListResult:
+    type: object
+    properties:
+      licensees:
+        $ref: "#/definitions/LicenseeList"
+  LicenseeList:
+    type: array
+    items:
+      $ref: "#/definitions/Licensee"
+  Licensee:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "An immutable ID provided for every licensee. Primarily used for paginated list requests"
+      key:
+        type: string
+        description: "Uniquely identifies a licensee for a key. Required to perform paid lookups for a specific licensee"
+      name:
+        type: string
+        description: "Licensee individual or organisation name"
+      address:
+        type: string
+        description: "Licensee's first, second and third line address as well as post town concatenated by commas"
+      postcode:
+        type: string
+        description: "Licensee's postcode"
+      createdAt:
+        type: string
+        format: datetime
+        description: "Timestamp for when the licensee was created"
+      whitelist:
+        $ref: "#/definitions/StringList"
+      daily:
+        $ref: "#/definitions/LicenseeDaily"
+  CreateLicenseeSchema:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "Licensee individual or organisation name"
+      address:
+        type: string
+        description: "Licensee's first, second and third line address as well as post town concatenated by commas"
+      postcode:
+        type: string
+        description: "Licensee's postcode"
+      whitelist:
+        $ref: "#/definitions/StringList"
+      daily:
+        $ref: "#/definitions/CreateLicenseeDaily"
+  UpdateLicenseeSchema:
+    type: object
+    properties:
+      address:
+        type: string
+        description: "Licensee's first, second and third line address as well as post town concatenated by commas"
+      postcode:
+        type: string
+        description: "Licensee's postcode"
+      whitelist:
+        $ref: "#/definitions/StringList"
+      daily:
+        $ref: "#/definitions/CreateLicenseeDaily"
+  LicenseeDaily:
+    type: object
+    properties:
+      limit:
+        type: number
+        description: "The maximum number of lookups this licensee can perform in a day. null indicates the limit is not active"
+      count:
+        type: number
+        description: "The number lookups performed by the licensee on the day represented b licesees.daily.updatedAt"
+      updatedAt:
+        type: string
+        format: datetime
+        description: "The timestamp when the limit was last used."
+      hasMore:
+        type: boolean
+        description: "Returns true if there are more licensees listed after the maximum number of results as implied by limit"
+  CreateLicenseeDaily:
+    type: object
+    properties:
+      limit:
+        type: number
+  LicenseeResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/Licensee"
+      code:
+        type: integer
+      message:
+        type: string
+  DeleteLicenseeResponseSchema:
+    type: object
+    properties:
+      result:
+        $ref: "#/definitions/DeleteLicenseeResult"
+  DeleteLicenseeResult:
+    type: object
+    properties:
+      deleted:
+        type: number
+        description: "the number of licensees deleted."
+  StringList:
+    type: array
+    items:
+      type: string
